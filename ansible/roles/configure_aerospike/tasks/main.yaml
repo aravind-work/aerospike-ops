@@ -1,0 +1,31 @@
+- name: Stop Aerospike
+  become: true
+  systemd:
+    name: aerospike
+    state: stopped
+
+- name: Get ephemeral NVMe block devices
+  shell: "lsblk -l | grep nvme | cut -d ' ' -f 1"
+  register: nvme_devices
+
+- name: Get managed SSD block devices
+  shell: "lsblk -l | grep {{managed_disk_size}} | cut -d ' ' -f 1"
+  register: managed_ssd_devices
+
+- name: Configure Aerospike Config file
+  become: true
+  template:
+    src: aerospike.conf.j2
+    dest: /etc/aerospike/aerospike.conf
+
+- name: Configure Aerospike Feature file
+  become: true
+  template:
+    src: features.conf.j2
+    dest: /etc/aerospike/features.conf
+
+- name: Start Aerospike
+  become: true
+  systemd:
+    name: aerospike
+    state: started

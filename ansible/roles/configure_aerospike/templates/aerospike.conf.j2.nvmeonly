@@ -1,0 +1,55 @@
+# Aerospike database configuration file for use with systemd.
+
+service {
+        paxos-single-replica-limit 1
+        proto-fd-max 30000
+        feature-key-file /etc/aerospike/features.conf
+}
+
+logging {
+        console {
+                context any info
+        }
+}
+
+network {
+        service {
+                address any
+                port 3000
+        }
+
+        heartbeat {
+            mode mesh
+            port 3002
+        {% for private_ip in as_private_ips %}
+        mesh-seed-address-port {{private_ip}} 3002
+        {% endfor %}
+        interval 150                # Number of milliseconds between heartbeats
+            timeout 20                  # Number of heartbeat intervals to wait before
+                                        # timing out a node
+        }
+
+        fabric {
+                port 3001
+        }
+
+        info {
+                port 3003
+        }
+}
+
+namespace test {
+        replication-factor {{replication_factor}}
+        memory-size {{memory_size}}
+
+        high-water-memory-pct 90
+        high-water-disk-pct 50
+
+        storage-engine device {
+    {% for device in nvme_devices.stdout_lines | list  %}
+        device /dev/{{device}}
+    {% endfor %}
+
+            write-block-size {{write_block_size}}
+        }
+}

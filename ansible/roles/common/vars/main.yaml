@@ -1,0 +1,2 @@
+home_dir: "/home/{{ real_user }}"
+as_private_ips: "{{groups['as_private']}}"

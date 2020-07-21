@@ -1,0 +1,5 @@
+as_version: '5.0.0.7'
+ubuntu_version: '16.04'
+as_installer_url: "https://www.aerospike.com/enterprise/download/server/{{ as_version }}/artifact/ubuntu16"
+as_installer_path: "{{home_dir}}/aerospike-server-enterprise-{{ as_version }}-ubuntu{{ubuntu_version}}"
+as_installer_archive_path: "{{as_installer_path}}.tgz"

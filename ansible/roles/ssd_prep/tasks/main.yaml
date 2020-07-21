@@ -1,0 +1,23 @@
+- name: Stop Aerospike
+  become: true
+  systemd:
+    name: aerospike
+    state: stopped
+  ignore_errors: True
+
+- name: Get ephemeral NVMe block devices
+  shell: "lsblk -l | grep nvme | cut -d ' ' -f 1"
+  register: nvme_devices
+
+- name: Get managed SSD block devices
+  shell: "lsblk -l | grep 2T | cut -d ' ' -f 1"
+  register: managed_ssd_devices
+
+- set_fact: ssd_devices={{ (nvme_devices.stdout_lines + managed_ssd_devices.stdout_lines) | join(" ")}}
+- debug: var=ssd_devices
+
+- name: Run script to prep SSD
+  become: true
+  script: "ssd-prep.sh {{ ssd_devices }}"
+  register: out
+- debug: var=out.stdout_lines

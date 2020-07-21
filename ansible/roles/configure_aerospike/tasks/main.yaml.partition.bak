@@ -1,0 +1,97 @@
+- name: Stop Aerospike
+  become: true
+  systemd:
+    name: aerospike
+    state: stopped
+
+- name: Get ephemeral NVMe block devices
+  shell: "lsblk -l | grep nvme | cut -d ' ' -f 1"
+  register: nvme_devices
+
+- name: UnMount partitions
+  command: sudo umount /mnt/{{ item }}
+  loop: "{{ nvme_devices.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Delete directories for mount
+  command: sudo rm -rf /mnt/{{ item }}
+  loop: "{{ nvme_devices.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Create XFS partition on NVMe disks
+  command: mkfs.xfs -f -d 'su=2m,sw=1' /dev/{{ item }}
+  become: true
+  loop: "{{ nvme_devices.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Create directories for mount
+  command: sudo mkdir /mnt/{{ item }}
+  loop: "{{ nvme_devices.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Mount partitions
+  command: sudo mount -o dax /dev/{{ item }} /mnt/{{ item }}
+  loop: "{{ nvme_devices.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Get managed SSD block devices
+  shell: "lsblk -l | grep {{managed_disk_size}} | cut -d ' ' -f 1"
+  register: managed_ssd_devices
+
+- name: Get managed SSD block devices
+  shell: "lsblk -l | grep 2T | cut -d ' ' -f 1"
+  register: managed_ssd_partitions_curr
+
+- name: UnMount partitions
+  command: sudo umount /mnt/{{ item }}
+  loop: "{{ managed_ssd_partitions_curr.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Delete directories for mount
+  command: sudo rm -rf /mnt/{{ item }}
+  loop: "{{ managed_ssd_partitions_curr.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Create partition on managed disks
+  command: sudo parted --script /dev/{{ item }} mklabel gpt mkpart primary ext4 1M 2097150MiB mkpart primary ext4 2097150MiB 4194300MiB
+  become: true
+  loop: "{{ managed_ssd_devices.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Get managed SSD block devices
+  shell: "lsblk -l | grep 2T | cut -d ' ' -f 1"
+  register: managed_ssd_partitions
+
+- name: Create XFS partition on Managed disks
+  command: mkfs.xfs -f -d 'su=2m,sw=1' /dev/{{ item }}
+  become: true
+  loop: "{{ managed_ssd_partitions.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Create directories for mount
+  command: sudo mkdir /mnt/{{ item }}
+  loop: "{{ managed_ssd_partitions.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Mount partitions
+  command: sudo mount -o dax /dev/{{ item }} /mnt/{{ item }}
+  loop: "{{ managed_ssd_partitions.stdout_lines|list }}"
+  ignore_errors: true
+
+- name: Configure Aerospike Config file
+  become: true
+  template:
+    src: aerospike.conf.j2
+    dest: /etc/aerospike/aerospike.conf
+
+- name: Configure Aerospike Feature file
+  become: true
+  template:
+    src: features.conf.j2
+    dest: /etc/aerospike/features.conf
+
+- name: Start Aerospike
+  become: true
+  systemd:
+    name: aerospike
+    state: started

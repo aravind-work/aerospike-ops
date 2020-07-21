@@ -1,0 +1,23 @@
+---
+- hosts: [loadgen]
+  roles:
+    - common
+    - loadgen
+  tasks:
+    - name: Kill all benchmarks
+      become: true
+      shell: "pkill -f aerospike-benchmarks"
+      register: out
+      ignore_errors: true
+    - debug: var=out.stdout_lines
+
+    - name: Start insert workload
+      vars:
+        keys_per_host: "{{ num_keys/(play_hosts | length) }}"
+        start_key_gen: "{{ (play_hosts.index(inventory_hostname)) * num_keys/(play_hosts | length) }}"
+        cmd: "/opt/aerospike/bin/asbenchmark -S {{ start_key_gen | int }} -k {{ keys_per_host| int }} -o S:{{ str_val_len }} -R -w I -n test -h {{ as_private_ips | join(',') }} -maxRetries 10000 -sleepBetweenRetries 50 -latency 14,1 -z {{ insert_thread_count }} -Y {{ connections_per_node}} | tee {{ home_dir }}/{{ log_file_insert }}"
+      shell: "{{ cmd }}"
+      register: out
+      async: 100000000
+      poll: 0
+    - debug: var=cmd

@@ -1,0 +1,12 @@
+---
+- hosts: [loadgen]
+  roles:
+    - common
+    - loadgen
+  tasks:
+    - name: Kill all benchmarks
+      become: true
+      shell: "pkill -f aerospike-benchmarks"
+      register: out
+      ignore_errors: true
+    - debug: var=out.stdout_lines

@@ -1,0 +1,2 @@
+amc_installer_url: 'https://github.com/aerospike-community/amc/releases/download/4.0.27/aerospike-amc-enterprise-4.0.27_amd64-debian.deb.zip'
+amc_deb_file: 'aerospike-amc-enterprise-4.0.27_amd64-debian.deb'

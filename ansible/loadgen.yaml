@@ -1,0 +1,7 @@
+---
+- hosts: [loadgen]
+  roles:
+    - common
+    - loadgen
+    - install_aerospike
+  tasks:

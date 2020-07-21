@@ -1,0 +1,5 @@
+---
+- hosts: as
+  roles:
+    - common
+    - ssd_prep

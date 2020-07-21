@@ -1,0 +1,7 @@
+---
+- hosts: [as]
+  roles:
+    - common
+    - install_aerospike
+    - configure_aerospike
+  tasks:

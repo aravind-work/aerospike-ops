@@ -1,0 +1,6 @@
+---
+- hosts: amc
+  roles:
+    - common
+    - install_amc
+  tasks:

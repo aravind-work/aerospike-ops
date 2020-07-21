@@ -1,0 +1,31 @@
+- name: Update and upgrade apt packages
+  become: "true"
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: Install a list of packages
+  become: "true"
+  apt:
+    pkg:
+      - openjdk-8-jre-headless
+      - fio
+      - sysstat
+      - glances
+      - iotop
+      - ioping
+
+
+- name: Download Aerospike enterprise
+  unarchive:
+    src: "{{as_installer_url}}"
+    dest: "{{home_dir}}"
+    remote_src: yes
+    mode: '0777'
+
+- name: Run Aerospike installer
+  become: true
+  command: "./asinstall"
+  args:
+    chdir: "{{as_installer_path}}"
+    creates: /opt/aerospike

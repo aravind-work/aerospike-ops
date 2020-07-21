@@ -1,0 +1,26 @@
+- name: Install a list of packages
+  become: true
+  apt:
+    pkg:
+      - unzip
+
+- name: Download aerospike management console
+  unarchive:
+    src: "{{amc_installer_url}}"
+    dest: "{{home_dir}}"
+    remote_src: yes
+    mode: '0777'
+
+
+- name: Install AMC
+  become: true
+  apt: deb="{{home_dir}}/{{amc_deb_file}}"
+
+- name: Start AMC
+  become: true
+  shell: "start-stop-daemon --start --background --quiet --pidfile /opt/amc/pidfile --exec /opt/amc/amc"
+  args:
+    executable: "/bin/bash"
+
+- debug:
+    msg: "Aerospike management console URL - http://{{ ansible_fqdn }}:8081/"
