@@ -14,7 +14,7 @@
 
     - name: Start read workload
       vars:
-        cmd: "/opt/aerospike/bin/asbenchmark -S {{ start_key }} -k {{ num_keys }} -o S:{{ str_val_len }} -R -w RU,100,0,0 -n test -h {{ as_private_ips | join(',') }} -latency 7,1 -z {{ read_thread_count }} -Y {{ connections_per_node}} |tee {{ home_dir }}/{{ log_file_read }}"
+        cmd: "/opt/aerospike/bin/asbenchmark -S {{ start_key }} -k {{ num_keys }} -o S:{{ str_val_len }} -R -w RU,100,0,0 -n test -h {{ as_private_ips | join(',') }} -latency 14,1 -z {{ read_thread_count }} -Y {{ connections_per_node}} |tee {{ home_dir }}/{{ log_file_read }}"
       shell: "{{ cmd }}"
       async: 100000000
       poll: 0

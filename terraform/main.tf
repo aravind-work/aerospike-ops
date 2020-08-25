@@ -198,6 +198,10 @@ resource "azurerm_linux_virtual_machine" "aerovm" {
   }
 }
 
+data "template_file" "snapshot_urls" {
+  template = "${file("out/disk-snapshots.txt")}"
+}
+
 # Create Managed Disks
 resource "azurerm_managed_disk" "datadisks" {
   count                = var.ascluster["vm_count"] * var.ascluster["disks_per_vm"]
@@ -206,7 +210,11 @@ resource "azurerm_managed_disk" "datadisks" {
   resource_group_name  = azurerm_resource_group.rg.name
   storage_account_type = var.ascluster["disk_type"]
   disk_size_gb         = var.ascluster["disk_size_gb"]
-  create_option        = "Empty"
+  //create_option        = "Empty"
+  source_resource_id =  trimspace(split(",", data.template_file.snapshot_urls.rendered)[count.index])
+  //source_resource_id   = "/subscriptions/60631e84-1bf3-42ca-bacc-c5242b586725/resourceGroups/aerospike-eval2-rg/providers/Microsoft.Compute/snapshots/aerospike-eval2-datadisk-snapshot-${count.index}"
+  create_option        = "Copy"
+  //source_resource_id   = azurerm_snapshot.snapshots.*.id[count.index]
   tags                 = local.tags
   zones                = [element(azurerm_linux_virtual_machine.aerovm.*.zone, ceil((count.index + 1) * 1.0 / var.ascluster["disks_per_vm"]) - 1)]
 }
@@ -284,11 +292,25 @@ resource "azurerm_linux_virtual_machine" "loadgenvm" {
   }
 }
 
+resource "azurerm_snapshot" "snapshots" {
+  count                = var.create_snapshots ? var.ascluster["vm_count"] * var.ascluster["disks_per_vm"] : 0
+  name                 = "${var.prefix}-datadisk-snapshot-${count.index}"
+  location             = azurerm_resource_group.rg.location
+  resource_group_name  = azurerm_resource_group.rg.name
+  create_option        = "Copy"
+  source_resource_id   = azurerm_managed_disk.datadisks.*.id[count.index]
+}
+resource "local_file" "snapshot-locations-file" {
+  count      = var.create_snapshots ? 1 : 0
+  depends_on = [azurerm_snapshot.snapshots]
+  content    = join(", ", azurerm_snapshot.snapshots.*.id)
+  filename   = "out/disk-snapshots.txt"
+}
+
 # Use null resource to run provisioners - possible to taint without re-creating VMs
 resource "null_resource" "provisioner-loadgen" {
   depends_on = [azurerm_linux_virtual_machine.loadgenvm]
   provisioner "local-exec" {
-    #todo:: enable host key check
     command = "export ANSIBLE_HOST_KEY_CHECKING=False; ansible-playbook -i ../ansible/inventory.yaml --user ${var.admin_username} --private-key ${local_file.private_key_openssh.filename} ../ansible/loadgen.yaml"
   }
 }

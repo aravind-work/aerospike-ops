@@ -16,8 +16,27 @@
 - set_fact: ssd_devices={{ (nvme_devices.stdout_lines + managed_ssd_devices.stdout_lines) | join(" ")}}
 - debug: var=ssd_devices
 
+- name: copy file from local to remote with owner, group and file permissions (symbolic)
+  copy:
+    src: ssd-prep.sh
+    dest: "{{ home_dir }}/ssd-prep.sh"
+    owner: "{{ real_user }}"
+    group: "{{ real_user }}"
+    mode: u=rwx,g=rx,o=rx
+
 - name: Run script to prep SSD
   become: true
-  script: "ssd-prep.sh {{ ssd_devices }}"
+  vars:
+    cmd: "sh {{ home_dir }}/ssd-prep.sh {{ ssd_devices }} >> {{ home_dir }}/ssd-prep.out"
+  shell: "{{ cmd }}"
   register: out
-- debug: var=out.stdout_lines
+  async: 100000000
+  poll: 0
+- debug: var=cmd
+
+- name: Start Aerospike
+  become: true
+  systemd:
+    name: aerospike
+    state: started
+  ignore_errors: True

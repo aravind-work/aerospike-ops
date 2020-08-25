@@ -42,12 +42,12 @@ namespace test {
         replication-factor {{replication_factor}}
         memory-size {{memory_size}}
 
-        high-water-memory-pct 80
-        high-water-disk-pct 80
+        high-water-memory-pct 90
+        high-water-disk-pct 90
 
         storage-engine device {
     {% for device_pair in nvme_devices.stdout_lines| zip(managed_ssd_devices.stdout_lines) | list  %}
-        device /dev/{{device_pair.0}} /dev/{{device_pair.1}}
+        device /dev/{{device_pair.1}}
     {% endfor %}
 
             write-block-size {{write_block_size}}

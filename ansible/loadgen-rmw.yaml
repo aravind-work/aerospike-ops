@@ -4,12 +4,7 @@
     - common
     - loadgen
   tasks:
-    - name: Kill all benchmarks
-      become: true
-      shell: "pkill -f aerospike-benchmarks"
-      register: out1
-      ignore_errors: true
-    - debug: var=out1.stdout_lines
+
 
     - name: Start read-modify-write workload 1
       vars:

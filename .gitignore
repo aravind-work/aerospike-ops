@@ -1,6 +1,9 @@
 #  Local .terraform directories
 **/.terraform/*
 
+**/out/*
+../ansible/roles/configure_aerospike/templates/features.conf.j2
+
 # .tfstate files
 *.tfstate
 *.tfstate.*

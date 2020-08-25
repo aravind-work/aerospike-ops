@@ -1,6 +1,6 @@
 variable "prefix" {
   type    = string
-  default = "aerospike-eval"
+  default = "aerospike-eval3"
 }
 
 variable "location" {
@@ -11,9 +11,9 @@ variable "location" {
 variable "ascluster" {
   type = map
   default = {
-    "vm_type"         = "Standard_L48s_v2"
-    "vm_count"        = "5"
-    "disks_per_vm"    = "6"
+    "vm_type"         = "Standard_L16s_v2"
+    "vm_count"        = "3"
+    "disks_per_vm"    = "2"
     //"disk_type"       = "StandardSSD_LRS"
     "disk_type"       = "Premium_LRS"
     //"disk_type"       = "UltraSSD_LRS"
@@ -22,9 +22,9 @@ variable "ascluster" {
     "disk_size_gb"    = "2048"
     "disk_size_tb"    = "2T"
 
-    "as_node_mem"     = "360G"
-    "replication_factor" = "3"
-    "write_block_size" = "64K"
+    "as_node_mem"     = "120G"
+    "replication_factor" = "2"
+    "write_block_size" = "1M"
   }
 }
 
@@ -32,9 +32,15 @@ variable "loadgencluster" {
   type = map
   default = {
     "vm_type"  = "Standard_L16s_v2"
-    "vm_count" = "6"
+    "vm_count" = "1"
   }
 }
+
+variable create_snapshots {
+  type        = bool
+  default     = false
+}
+
 
 variable private_ip_prefix {
   type    = string

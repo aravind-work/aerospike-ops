@@ -1,0 +1,6 @@
+real_user: aerospike
+replication_factor: 2
+write_block_size: '1M'
+memory_size: '120G'
+managed_disk_size: '2T'
+disks_per_vm: 2

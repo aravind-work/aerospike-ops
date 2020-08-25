@@ -1,13 +1,13 @@
 start_key: 1
-num_keys: 1000000000
+num_keys: 100000000
 str_val_len: 2000
-insert_thread_count: 10
-read_thread_count: 250
+insert_thread_count: 250
+read_thread_count: 300
 readbatch_thread_count: 1
 readbatch_size: 10000
-rmw_thread_count: 10
+rmw_thread_count: 50
 
-connections_per_node: 5
+connections_per_node: 1
 log_file: 'some_workload.log'
 log_file_read: 'read_workload.log'
 log_file_readbatch: 'readbatch_workload.log'
