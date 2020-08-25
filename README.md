@@ -3,6 +3,8 @@
 ## Specify the desired topology
 - Modify terraform/variables.tf
 - Update section *ascluster* and *loadgen* cluster to reflect desired topology
+- Update variable prefix to a different value
+- Update ../ansible/configure_aerospike/templates/features.conf.j2. Include the correct signature for the feature file.
 
 ## Install Azure CLI and select subscription
 ```sh
